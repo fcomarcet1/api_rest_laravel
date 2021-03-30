@@ -13,6 +13,23 @@ class Category extends Model
     protected $table = 'categories';
 
 
+    protected $fillable = [
+        'name',
+    ];
+
+    /**
+     * Factories && Seeders.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        self::creating(function ($table){
+            if (!app()->runningInConsole()){
+                $table->user_id = auth()->id();
+            }
+        });
+    }
+
     /**
      * get all posts in a category (1:N).
      *

@@ -12,6 +12,23 @@ class Post extends Model
 
     protected $table = 'posts';
 
+    protected $fillable = [
+        'title',
+        'description'
+    ];
+
+    /**
+     * Factories && Seeders.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        self::creating(function ($table){
+            if (!app()->runningInConsole()){
+                $table->user_id = auth()->id();
+            }
+        });
+    }
 
     /**
      * Gets user owner of the post [One To Many inverse (N:1)].
