@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Firebase\JWT\JWT;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Helpers\JwtAuth;
@@ -59,9 +60,4 @@ class LoginController extends Controller
         return response()->json($signUp, 200);
     }
 
-
-    public function checkToken($jwt, $getIdentity = false)
-    {
-
-    }
 }

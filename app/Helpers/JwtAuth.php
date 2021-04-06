@@ -83,4 +83,34 @@ class JwtAuth
 
         return $data;
     }
+
+    public function checkToken($jwt, $getIdentity = false)
+    {
+        $auth = false;
+
+        // decode json && check possible errors
+        try {
+            // Eliminar comillas doble si llega como string
+            $jwt = str_replace('"', '', $jwt);
+            $JwtDecoded = JWT::decode($jwt, $this->key, ['HS256']);
+        } catch (\UnexpectedValueException $e) {
+            $auth = false;
+        } catch (\DomainException $e) {
+            $auth = false;
+        }
+
+        // Validate token --> is valid && is object && exist id
+        if(!empty($JwtDecoded) && is_object($JwtDecoded) && isset($JwtDecoded->sub)){
+            $auth = true;
+        } else{
+            $auth = false;
+        }
+
+        // Return decoded token with user information if $getIdentity = true
+        if($getIdentity){
+            return $JwtDecoded;
+        }
+
+        return $auth;
+    }
 }

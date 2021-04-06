@@ -52,7 +52,7 @@ Route::post('/api/register', [RegisterController::class, 'register']);
 Route::post('/api/login', [LoginController::class, 'login']);
 
 // User.
-
+Route::post('/api/user/update', [userController::class, 'update']);
 
 // Posts.
 
