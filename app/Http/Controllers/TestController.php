@@ -39,10 +39,20 @@ class TestController extends Controller
        $users = User::all();
        //dump($users);
        foreach ($users as $user){
-           dump($user->name);
-           dump($user->email);
+           //dump($user->name);
+           //dump($user->email);
        }
+       $email = 'fcomarcet1@gmail.com';
+       $password = '$2y$10$RFOGHzpFX3FprG1UqtJoV.yKT3vHlexf4O1SmVouBfFjHcJfRHVPC';
 
+       $user = User::where([
+           'email' => $email,
+           'password' => $password
+       ])->first();
+
+       dump($user);
+       dump(is_object($user));
+       /*
        $posts = Post::all();
        //dump($posts);
        foreach($posts as $post){
@@ -53,6 +63,7 @@ class TestController extends Controller
            echo "category";
            dump($post->category->name);
        }
+       */
        die();
    }
 

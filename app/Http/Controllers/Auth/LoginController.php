@@ -3,12 +3,65 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Helpers\JwtAuth;
+use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
 {
-    public function login(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function login(Request $request): JsonResponse
     {
-        return "Accion login del LOGINCONTROLLER";
+        $JwtAuth = new JwtAuth();
+
+        // Recibir datos de la peticion
+        $data = [];
+        $requestData = $request->all(); // returns array ['json' => '{"name":"Pepe"...}']
+        $json = $request->input('login'); // returns string '{"name":"Seba",...}'
+        $params = json_decode($json); // returns object var_dump($params->name);
+        $params_array = json_decode($json, true); // returns  associative array
+
+
+        // validacion de datos
+        $validate = Validator::make($params_array, [
+            'email'   => 'required|string|email',
+            'password'=> 'required|string|'
+
+        ]);
+
+        // Check array validation
+        if ($validate->fails()){
+            $signUp = [
+                'status' => 'error',
+                'code' => 400,
+                'message' => 'ERROR. El usuario no se ha podido identificar',
+                'errors' => $validate->errors()
+            ];
+
+        }
+        else { // validation OK
+
+            // devolver token o datos decodificados del token
+            $email = $params->email;
+            $password = $params->password;
+
+            $signUp = $JwtAuth->signUp($email, $password);
+
+            if (!empty($params->getToken)){
+                $signUp = $JwtAuth->signUp($email, $password, true);
+            }
+        }
+
+        return response()->json($signUp, 200);
+    }
+
+
+    public function checkToken($jwt, $getIdentity = false)
+    {
+
     }
 }
