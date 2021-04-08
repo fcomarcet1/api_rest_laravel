@@ -48,8 +48,8 @@ class RegisterController extends Controller
              * Use validator Library facades
              */
             $validate = Validator::make($params_array, [
-                'name'    => 'required|string|between:2,100',
-                'surname' => 'required|string|between:2,100',
+                'name'    => 'required|string|alpha|between:2,100',
+                'surname' => 'required|string|alpha|between:2,100',
                 'email'   => 'required|string|email|max:100|unique:users',
                 'password'=> 'required|string|min:6'
 

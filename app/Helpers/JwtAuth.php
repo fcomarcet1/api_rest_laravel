@@ -8,6 +8,9 @@ use App\Models\User;
 
 class JwtAuth
 {
+    /**
+     * @var string
+     */
     protected $key;
 
     /**
@@ -84,6 +87,11 @@ class JwtAuth
         return $data;
     }
 
+    /**
+     * @param $jwt
+     * @param false $getIdentity
+     * @return bool|object
+     */
     public function checkToken($jwt, $getIdentity = false)
     {
         $auth = false;
