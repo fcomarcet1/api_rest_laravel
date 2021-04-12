@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -11,14 +12,17 @@ class JwtAuth
     /**
      * @var string
      */
-    protected $key;
+    protected $secret_key;
+    protected $encrypt;
+    private static $aud = null;
 
     /**
      * JwtAuth constructor.
      */
     public function __construct()
     {
-        $this->key = 'kj43dg67hkñkf745kfj.d363bh9667n%&&3gidbfino$$.j436dghfo6534gfnghio';
+        $this->secret_key = 'kj43dg67hkñkf745kfj.d363bh9667n%&&3gidbfino$$.j436dghfo6534gfnghio';
+        $this->encrypt = ['HS256'];
     }
 
     /**
@@ -48,15 +52,16 @@ class JwtAuth
                     'email' => $user->email,
                     'name' => $user->name,
                     'surname' => $user->surname,
+                    'aud' => self::Aud(),
                     'iat' => time(),
                     'exp' => time() + (7 * 24 * 60 * 60)
                 ];
 
                 // codificar token
-                $jwt = JWT::encode($token, $this->key, 'HS256');
+                $jwt = JWT::encode($token, $this->secret_key, 'HS256');
 
                 // decodificar token para obtener datos del usuario identificado
-                $jwtDecoded = JWT::decode($jwt, $this->key, ['HS256']);
+                $jwtDecoded = JWT::decode($jwt, $this->secret_key, ['HS256']);
 
                 // devolver datos decodificados o el token en funcion del param getToken()
                 if (is_null($getToken)){
@@ -91,16 +96,22 @@ class JwtAuth
      * @param $jwt
      * @param false $getIdentity
      * @return bool|object
+     * @throws Exception
      */
     public function checkToken($jwt, $getIdentity = false)
     {
         $auth = false;
 
+        if(empty($jwt))
+        {
+            throw new Exception("Invalid token supplied.");
+        }
+
         // decode json && check possible errors
         try {
             // Eliminar comillas doble si llega como string
             $jwt = str_replace('"', '', $jwt);
-            $JwtDecoded = JWT::decode($jwt, $this->key, ['HS256']);
+            $JwtDecoded = JWT::decode($jwt, $this->secret_key, $this->encrypt);
         } catch (\UnexpectedValueException $e) {
             $auth = false;
         } catch (\DomainException $e) {
@@ -120,5 +131,24 @@ class JwtAuth
         }
 
         return $auth;
+    }
+
+
+    private static function Aud()
+    {
+        $aud = '';
+
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            $aud = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $aud = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else {
+            $aud = $_SERVER['REMOTE_ADDR'];
+        }
+
+        $aud .= @$_SERVER['HTTP_USER_AGENT'];
+        $aud .= gethostname();
+
+        return sha1($aud);
     }
 }

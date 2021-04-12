@@ -38,7 +38,7 @@ class LoginController extends Controller
         if ($validate->fails()){
             $signUp = [
                 'status' => 'error',
-                'code' => 400,
+                'code' => 401 , //401 Unauthorized
                 'message' => 'ERROR. El usuario no se ha podido identificar',
                 'errors' => $validate->errors()
             ];
