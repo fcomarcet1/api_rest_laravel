@@ -7,8 +7,11 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File; // cargamos File para obtener la imagen en su guardado
+use Illuminate\Support\Facades\Storage; // cargamos storage para almacenar la imagen
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+
 
 /**
  * Class UserController
@@ -41,13 +44,14 @@ class UserController extends Controller
 
         // Check token is valid
         $JwtAuth = new JwtAuth();
-        $checkToken = $JwtAuth->checkToken($token); // return true|false
+        //$checkToken = $JwtAuth->checkToken($token); // return true|false
 
         // Recoger datos por post
         $json = $request->input('json', null);
         $params_array = json_decode($json, true);
 
-        if ($checkToken && !empty($params_array)) {
+        if (!empty($params_array)) {
+
             // obtener usuario identificado
             $user = $JwtAuth->checkToken($token, true);
             $user_id = $user->sub;
@@ -63,12 +67,11 @@ class UserController extends Controller
 
             // Check if exist email in DB && user is owner of this email
             if ($email_find !== null && ($user->sub !== $email_find->id )){
-                echo "error. el email existe en la BD y pertenece a otro usuario";
                 //devolver array con resultado
                 $data = [
                     'status' => 'error',
                     'code' => 400,
-                    'message' => 'Datos de usuario actualizados correctamente.',
+                    'message' => 'ERROR.No puedes elegir ese email ya pertenece a otro usuario.',
                 ];
 
             }
@@ -93,24 +96,35 @@ class UserController extends Controller
                     ];
                 }
                 else{
+                    $params_array['updated_at'] = date("Y-m-d H:m:s");
+
                     // Quitar campos que no queremos actualizar
                     unset($params_array['id']);
                     unset($params_array['role']);
                     unset($params_array['password']);
-                    unset($params_array['created_ad']);
+                    unset($params_array['created_at']);
                     unset($params_array['remember_token']);
 
                     // Actualizar usuario en bbdd
-                    $user_update = User::where('id', $user->sub)->update($params_array);
+                    $user_updated = User::where('id', $user->sub)->update($params_array);
 
-                    //devolver array con resultado
+                    if ($user_updated){
                     $data = [
                         'status' => 'succes',
                         'code' => 201, //201 Created response for PUT
-                        'message' => 'Datos de usuario actualizados correctamente.',
                         'user' => $user,
+                        'message' => 'Datos de usuario actualizados correctamente.',
                         'user_updated' => $params_array
-                    ];
+                        ];
+                    }
+                    else{
+                        $data = [
+                            'status' => 'error',
+                            'code' => 400,
+                            'message' => 'ERROR.No se pudo actualizar los datos de usuario',
+                        ];
+                    }
+
                 }
             }
         }
@@ -118,7 +132,92 @@ class UserController extends Controller
             $data = [
                 'code' => 401, //401 Unauthorized
                 'status' => 'error',
-                'message' => ' El usuario no esta identificado'
+                'message' => ' El usuario no esta identificado',
+            ];
+        }
+
+        return response()->json($data, $data['code']);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function upload(Request $request): JsonResponse
+    {
+
+        // Validate image from request
+        $validate = Validator::make($request->all(),[
+            'file0' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:20048',
+        ]);
+
+        if($validate->fails()) {
+            $data = [
+                'code' => 500,
+                'status' => 'error',
+                'message' => ' ERROR. Selecciona una imagen valida',
+                'errors' => $validate->errors()
+            ];
+
+            return response()->json($data, $data['code']);
+        }
+
+        // Determine if a file is present on the request && Check if image has been uploaded
+        if ($request->hasFile('file0') && $request->file('file0')->isValid()){
+
+            // Get image from request
+            $image = $request->file('file0');
+
+            // Guardar imagen
+            if($image){
+
+                $image_path_unique = time().'_'.$image->getClientOriginalName();
+
+                $image_path = $image->path(); // tmp path
+                $image_extension = $image->extension();
+                $mime_type = $image->getClientMimeType();
+                $image_to_save = File::get($image);
+
+                //Usamos la clase storage y su metodo estatico disk para almacenar la imagen
+                // con el metodo put en storage/users/avatar (Metodo Victor)
+                // $image_uploaded_path = Storage::disk('users')->put($image_path_unique, $image_to_save);
+
+                // MAS SENCILLO docs oficial laravel
+                $uploadFolder = 'users';
+                $uploaded_image = $image->storeAs($uploadFolder, $image_path_unique );
+
+                if($uploaded_image){
+                    $data = [
+                        'code' => 200,
+                        'status' => 'success',
+                        'message' => 'OK.La imagen se ha subido correctamente',
+                        'image_name' => $image_path_unique,
+                        "image_url" => Storage::disk('public')->url($save),
+                        'mime' => $image->getClientMimeType(),
+                    ];
+                }else{
+                    $data = [
+                        'code' => 400,
+                        'status' => 'error',
+                        'message' => 'No se pudo almacenar la imagen el el servidor'
+                    ];
+                }
+
+
+            }else{
+                $data = [
+                    'code' => 400,
+                    'status' => 'error',
+                    'message' => ' ERROR. Error al subir la imagen'
+                ];
+            }
+
+        }else{
+            $data = [
+                'code' => 400,
+                'status' => 'error',
+                'message' => ' Request does not contain a file'
             ];
         }
 

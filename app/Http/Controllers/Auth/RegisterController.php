@@ -76,6 +76,7 @@ class RegisterController extends Controller
                 $user->email = $params_array['email'];
                 $user->password = $password;
                 $user->role = "ROLE_USER";
+                $user->updated_at = null;
                 // var_dump($user); die();
 
                 // Save user in DB

@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\ApiAuth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 | Http Methods
 |--------------------------------------------------------------------------
 |
-| GET : Obtenter datos/recursos.
+| GET : Obtener datos/recursos.
 | POST: Guardar datos/recursos y Forms.
 | PUT : Actualizar datos/recursos.
 | DELETE: Eliminar datos/recursos.
@@ -52,7 +53,9 @@ Route::post('/api/register', [RegisterController::class, 'register']);
 Route::post('/api/login', [LoginController::class, 'login']);
 
 // User.
-Route::put('/api/user/update', [userController::class, 'update']);
+Route::put('/api/user/update', [UserController::class, 'update']);
+Route::post('api/user/upload', [UserController::class, 'upload'])
+    ->middleware(ApiAuth::class);
 
 // Posts.
 
