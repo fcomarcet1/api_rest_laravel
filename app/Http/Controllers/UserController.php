@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Helpers\JwtAuth;
 use App\Models\User;
 use Exception;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File; // cargamos File para obtener la imagen en su guardado
-use Illuminate\Support\Facades\Storage; // cargamos storage para almacenar la imagen
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\File;   // cargamos File para obtener la imagen en su guardado
+use Illuminate\Support\Facades\Storage;// cargamos storage para almacenar la imagen
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+
 
 
 /**
@@ -31,6 +34,8 @@ class UserController extends Controller
 
 
     /**
+     *  Update user profile
+     *
      * @param Request $request
      * @return JsonResponse
      * @throws Exception
@@ -141,8 +146,11 @@ class UserController extends Controller
 
 
     /**
+     * Upload user avatar
+     *
      * @param Request $request
      * @return JsonResponse
+     * @throws Exception
      */
     public function upload(Request $request): JsonResponse
     {
@@ -173,11 +181,10 @@ class UserController extends Controller
             if($image){
 
                 $image_path_unique = time().'_'.$image->getClientOriginalName();
-
-                $image_path = $image->path(); // tmp path
-                $image_extension = $image->extension();
-                $mime_type = $image->getClientMimeType();
-                $image_to_save = File::get($image);
+                $image_path        = $image->path(); // tmp path
+                $image_extension   = $image->extension();
+                $mime_type         = $image->getClientMimeType(); // image/jpg
+                $image_to_save     = File::get($image);
 
                 //Usamos la clase storage y su metodo estatico disk para almacenar la imagen
                 // con el metodo put en storage/users/avatar (Metodo Victor)
@@ -187,13 +194,34 @@ class UserController extends Controller
                 $uploadFolder = 'users';
                 $uploaded_image = $image->storeAs($uploadFolder, $image_path_unique );
 
-                if($uploaded_image){
+                // Almacenar image_path en BBDD
+
+                // Get Token from request(Se obtiene del header)
+                $token = $request->header('Authorization');
+
+                // Get id user logged.
+                $JwtAuth = new JwtAuth();
+                $user_logged = $JwtAuth->checkToken($token, true);
+                $user_id = $user_logged->sub;
+                //$user_logged->image = $image_path_unique;
+
+                // find user in DB
+                $user_update = User::find($user_id);
+
+                // Set data in user obj for save in DB
+                $user_update->image = $image_path_unique;
+                $user_update->updated_at = date("Y-m-d H:m:s");
+
+                // Save user in DB
+                 $save = $user_update->save();
+
+                if($uploaded_image && $save){
                     $data = [
                         'code' => 200,
                         'status' => 'success',
                         'message' => 'OK.La imagen se ha subido correctamente',
                         'image_name' => $image_path_unique,
-                        "image_url" => Storage::disk('public')->url($save),
+                        "image_url" => Storage::disk('public')->url($uploaded_image),
                         'mime' => $image->getClientMimeType(),
                     ];
                 }else{
@@ -221,6 +249,66 @@ class UserController extends Controller
             ];
         }
 
+        return response()->json($data, $data['code']);
+    }
+
+
+    /**
+     * @param $filename
+     * @return JsonResponse|Response
+     * @throws FileNotFoundException
+     */
+    public function getImage($filename)
+    {
+        $isset_file = Storage::disk('users')->exists($filename);
+
+        if($isset_file){
+            $file = Storage::disk('users')->get($filename);
+            return new Response($file, 200);
+
+            /*
+            // Return json.
+            $data = array(
+                'code' => 200,
+                'status' => 'success',
+                'image' => base64_encode($file)
+            );
+            return response()->json($data, $data['code']);
+            */
+        }
+        else{
+            $data = [
+                'code' => 404,
+                'status' => 'error',
+                'message' => 'ERROR.La imagen no existe'
+            ];
+            return response()->json($data, $data['code']);
+        }
+
+    }
+
+
+    /**
+     * @param  $id
+     * @return JsonResponse
+     */
+    public function profile($id): JsonResponse
+    {
+        $user = User::find($id);
+
+        if(is_object($user)){
+            $data = [
+                'code' => 200,
+                'status' => 'success',
+                'user' => $user
+            ];
+        }else{
+            $data = [
+                'code' => 404,
+                'status' => 'error',
+                'message' => 'El usuario no existe',
+            ];
+        }
         return response()->json($data, $data['code']);
     }
 
