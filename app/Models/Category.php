@@ -30,7 +30,7 @@ class Category extends Model
     }
 
     /**
-     * get all posts in a category (1:N).
+     * Get all posts in a category (1:N).
      *
      * @return HasMany
      */

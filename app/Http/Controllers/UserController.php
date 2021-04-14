@@ -254,6 +254,8 @@ class UserController extends Controller
 
 
     /**
+     * Get user avatar.
+     *
      * @param $filename
      * @return JsonResponse|Response
      * @throws FileNotFoundException
@@ -289,6 +291,8 @@ class UserController extends Controller
 
 
     /**
+     * Get data profile user
+     *
      * @param  $id
      * @return JsonResponse
      */

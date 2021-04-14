@@ -37,13 +37,13 @@ Route::get('/', function () {
 });
 
 // ****************** TEST ROUTES *********************************************
-Route::get('/test', [TestController::class, 'test']);
-Route::get('/test-orm', [TestController::class, 'testORM'])->name('test_ORM');
-Route::get('/test-json', [TestController::class, 'testJson']);
+// Route::get('/test', [TestController::class, 'test']);
+// Route::get('/test-orm', [TestController::class, 'testORM'])->name('test_ORM');
+// Route::get('/test-json', [TestController::class, 'testJson']);
 
-Route::get('/usuario/pruebas', [UserController::class ,'test']);
-Route::get('/post/pruebas', [PostController::class ,'test']);
-Route::get('/categoria/pruebas', [CategoryController::class ,'test']);
+// Route::get('/usuario/pruebas', [UserController::class ,'test']);
+// Route::get('/post/pruebas', [PostController::class ,'test']);
+// Route::get('/categoria/pruebas', [CategoryController::class ,'test']);
 
 
 
@@ -58,7 +58,14 @@ Route::post('api/user/upload', [UserController::class, 'upload'])->middleware(Ap
 Route::get('/api/user/avatar/{filename}', [UserController::class, 'getImage']); // avatar
 Route::get('/api/user/profile/{id}', [UserController::class, 'profile']);
 
-// Posts.
-
-
 // Categories.
+Route::resource('/api/category', CategoryController::class);
+
+// Posts.
+/*Route::resources([
+    'categories' => CategoryController::class,
+    'posts' => PostController::class,
+]);*/
+
+
+

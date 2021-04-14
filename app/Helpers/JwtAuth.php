@@ -104,7 +104,8 @@ class JwtAuth
 
         if(empty($jwt))
         {
-            throw new Exception("Invalid token supplied.");
+            $auth = false;
+            //throw new Exception("Invalid token supplied.");
         }
 
         // decode json && check possible errors
