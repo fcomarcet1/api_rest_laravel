@@ -91,32 +91,53 @@ class CategoryController extends Controller
         // Get data from request
         $json = $request->input('json', null);
 
-
         // Decode json && Get data in associative array
         $params_array = json_decode($json, true);
 
 
         if (!empty($json) && !empty($params_array) ){
-            dump($json);
-            dump($params_array); die();
 
             // validate data
-            $validate = Validator::make($request->all(), [
-                'name' => 'required|string'
+            $validate = Validator::make($params_array, [
+                'name' => 'required|unique:categories'
             ]);
 
             // Check if validate fails
+            if ($validate->fails()){
+                $data = [
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => 'ERROR. La categoria no se ha creado. ya existe una categoria con ese nombre',
+                    'errors' => $validate->errors()
+                ];
+            }
+            else{
+                // Save in DB
+                    // $category = new Category();
+                    // $category->name = $params_array['name'];
+                    // $save = $category->save();
+
+                $category = Category::create($params_array);
+
+                if (is_object($category)){
+                    $data = [
+                        'code' => 200,
+                        'status' => 'succes',
+                        'message' => 'OK. Categoria añadida correctamente.',
+                        'category' => $category,
+                    ];
 
 
-            // Save in DB
-            // Category::create($request->only("name"));
+                }else{
+                    $data = [
+                        'status' => 'error',
+                        'code' => 400,
+                        'message' => 'ERROR. Error al guardar el registro en BD',
+                    ];
+                }
 
-            // Return json data
-            $data = [
-                'code' => 200,
-                'status' => 'succes',
-                'message' => 'OK. Categoria añadida correctamente '
-            ];
+            }
+            
         }
         else { // Empty data from request return error
             $data = [

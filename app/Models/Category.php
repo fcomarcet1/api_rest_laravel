@@ -19,7 +19,7 @@ class Category extends Model
     /**
      * Factories && Seeders.
      */
-    protected static function boot()
+    /*protected static function boot()
     {
         parent::boot();
         self::creating(function ($table){
@@ -27,7 +27,7 @@ class Category extends Model
                 $table->user_id = auth()->id();
             }
         });
-    }
+    }*/
 
     /**
      * Get all posts in a category (1:N).
