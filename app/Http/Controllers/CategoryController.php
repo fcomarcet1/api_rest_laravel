@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\JwtAuth;
 use App\Models\Category;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -20,7 +23,7 @@ class CategoryController extends Controller
     public function __construct()
     {
         $this->middleware('api.auth')->except(['index', 'show',]);
-        //$this->middleware('api.auth')->only(['store', 'edit',]);
+        $this->middleware('api.auth.admin')->only(['update']);
     }
 
 
@@ -99,7 +102,7 @@ class CategoryController extends Controller
 
             // validate data
             $validate = Validator::make($params_array, [
-                'name' => 'required|unique:categories'
+                'name' => 'required|string|unique:categories'
             ]);
 
             // Check if validate fails
@@ -122,11 +125,10 @@ class CategoryController extends Controller
                 if (is_object($category)){
                     $data = [
                         'code' => 200,
-                        'status' => 'succes',
+                        'status' => 'success',
                         'message' => 'OK. Categoria añadida correctamente.',
                         'category' => $category,
                     ];
-
 
                 }else{
                     $data = [
@@ -137,7 +139,7 @@ class CategoryController extends Controller
                 }
 
             }
-            
+
         }
         else { // Empty data from request return error
             $data = [
@@ -151,6 +153,7 @@ class CategoryController extends Controller
     }
 
 
+
     /**
      * Show the form for creating a new resource.
      *
@@ -158,9 +161,8 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        //  return view('category.create');
     }
-
 
 
     /**
@@ -171,20 +173,88 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        //
+        // $category = Category::find($id);
+        // return view('categories.edit', compact('category'));
     }
+
 
     /**
      * Update the specified resource in storage.
      *
+     * @param Category $category
      * @param Request $request
-     * @param  int  $id
-     * @return Response
+     * @return JsonResponse
+     * @throws Exception
      */
-    public function update(Request $request, $id)
+    public function update(Category $category, Request $request): JsonResponse
     {
-        //
+        // Si recibe el objeto category directamente obtenemos la categoria a modificar
+        // ya que al pasarle el id como parametro en la url obtiene el objeto de dicho id
+        // dump($category->id, $category->name);die();
+
+        // Get data from request
+        $json = $request->input('json', null);
+        $params_array = json_decode($json, true);
+
+        // Get data from user logged
+        $token = $request->header('Authorization');
+        $JwtAuth = new JwtAuth();
+        $user = $JwtAuth->checkToken($token, true);
+        $user_role = $user->role;
+
+        //dump($user_role);die();
+
+        if (!empty($json) && !empty($params_array) ){
+            // Validate data
+            $validate = Validator::make($params_array, [
+                'name' => 'required|string|unique:categories,name,' . $category->id
+            ]);
+
+            if ($validate->fails()) {
+                $data = [
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => 'ERROR.Introduce una categoria valida.',
+                    'error' => $validate->errors(),
+                ];
+            }
+            else {
+                $params_array['updated_at'] = date("Y-m-d H:m:s");
+
+                // Quitar campos que no queremos actualizar
+                // unset($params_array['id']);
+                unset($params_array['created_at']);
+
+                $updatedCategory = $category->fill($params_array)->save();
+
+                if($updatedCategory){
+                    $data = [
+                        'code' => 200,
+                        'status' => 'success',
+                        'message' => 'OK. Categoria actualizada correctamente.',
+                        'category' => $category,
+                    ];
+                }
+                else{
+                    $data = [
+                        'status' => 'error',
+                        'code' => 400,
+                        'message' => 'ERROR.No se pudo actualizar la categoria.',
+                    ];
+                }
+
+            }
+        }
+        else{ // Empty data from request return error
+            $data = [
+                'status' => 'error',
+                'code' => 400,
+                'message' => 'ERROR. Los datos enviados no se recibieron',
+            ];
+        }
+        return response()->json($data, $data['code']);
     }
+
 
     /**
      * Remove the specified resource from storage.

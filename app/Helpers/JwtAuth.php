@@ -52,6 +52,7 @@ class JwtAuth
                     'email' => $user->email,
                     'name' => $user->name,
                     'surname' => $user->surname,
+                    'role' => $user->role,
                     'aud' => self::Aud(),
                     'iat' => time(),
                     'exp' => time() + (7 * 24 * 60 * 60)
@@ -141,9 +142,11 @@ class JwtAuth
 
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             $aud = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        }
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $aud = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
+        }
+        else {
             $aud = $_SERVER['REMOTE_ADDR'];
         }
 
