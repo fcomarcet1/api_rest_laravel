@@ -20,7 +20,7 @@ class Post extends Model
     /**
      * Factories && Seeders.
      */
-    protected static function boot()
+    /*protected static function boot()
     {
         parent::boot();
         self::creating(function ($table){
@@ -28,7 +28,7 @@ class Post extends Model
                 $table->user_id = auth()->id();
             }
         });
-    }
+    }*/
 
     /**
      * Gets user owner of the post [One To Many inverse (N:1)].

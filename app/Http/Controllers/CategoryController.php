@@ -195,15 +195,15 @@ class CategoryController extends Controller
         $json = $request->input('json', null);
         $params_array = json_decode($json, true);
 
-        // Get data from user logged
-        $token = $request->header('Authorization');
-        $JwtAuth = new JwtAuth();
-        $user = $JwtAuth->checkToken($token, true);
-        $user_role = $user->role;
-
         //dump($user_role);die();
 
         if (!empty($json) && !empty($params_array) ){
+            // Get data from user logged
+            $token = $request->header('Authorization');
+            $JwtAuth = new JwtAuth();
+            $user = $JwtAuth->checkToken($token, true);
+            $user_role = $user->role;
+
             // Validate data
             $validate = Validator::make($params_array, [
                 'name' => 'required|string|unique:categories,name,' . $category->id
