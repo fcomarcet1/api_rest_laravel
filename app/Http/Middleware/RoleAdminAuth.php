@@ -25,12 +25,13 @@ class RoleAdminAuth
         // Get Token from request(Se obtiene del header).
         $token = $request->header('Authorization');
 
-        // Check token is valid
+        // Check token is valid and not empty
         $JwtAuth = new JwtAuth();
         $checkToken = $JwtAuth->checkToken($token);
 
         // Get role
         $user = $JwtAuth->checkToken($token, true);
+        //dump($user); die();
         // $user_id = $user->sub;
         $user_role = $user->role;
 

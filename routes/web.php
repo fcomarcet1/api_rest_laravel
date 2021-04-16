@@ -58,14 +58,11 @@ Route::post('api/user/upload', [UserController::class, 'upload'])->middleware(Ap
 Route::get('/api/user/avatar/{filename}', [UserController::class, 'getImage']); // avatar
 Route::get('/api/user/profile/{id}', [UserController::class, 'profile']);
 
-// Categories.
-Route::resource('/api/category', CategoryController::class);
-
-// Posts.
-/*Route::resources([
-    'categories' => CategoryController::class,
-    'posts' => PostController::class,
-]);*/
+// Categories && Posts.
+Route::resources([
+    '/api/category' => CategoryController::class,
+    '/api/post' => PostController::class,
+]);
 
 
 

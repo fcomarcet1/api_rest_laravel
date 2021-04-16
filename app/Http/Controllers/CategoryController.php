@@ -8,7 +8,6 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -23,7 +22,7 @@ class CategoryController extends Controller
     public function __construct()
     {
         $this->middleware('api.auth')->except(['index', 'show',]);
-        $this->middleware('api.auth.admin')->only(['update']);
+        $this->middleware('api.auth.admin')->only(['store', 'update']);
     }
 
 
