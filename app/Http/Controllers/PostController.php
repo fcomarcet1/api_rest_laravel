@@ -216,6 +216,18 @@ class PostController extends Controller
             return response()->json($data, $data['code']);
         }
 
+        // Check if exists at registry
+        $post_find = Post::find($id);
+
+        if (empty($post_find)){
+
+            $data['code'] = 400;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR. El post que deseas eliminar no existe.';
+
+            return response()->json($data, $data['code']);
+        }
+
 
         // Find registry for update and check (user logged = user_id)->owner.
         $post = Post::where('id',$id)->where('user_id', $userAuth->sub)->first();
@@ -242,6 +254,7 @@ class PostController extends Controller
         ];
 
         // Actualizar el registro en concreto
+        //dump($params_array); die();
         $post_update = Post::updateOrCreate($where, $params_array);
 
         if (empty($post_update)){
@@ -253,7 +266,7 @@ class PostController extends Controller
             return response()->json($data, $data['code']);
         }
 
-        // Add data for response
+        // Return success response
         $data['code'] = 200;
         $data['status'] = 'success';
         $data['post'] = $post_update;
@@ -266,12 +279,62 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return Response
+     * @param int $id
+     * @param Request $request
+     * @return JsonResponse
+     * @throws Exception
      */
-    public function destroy($id)
+    public function destroy(int $id, Request $request): JsonResponse
     {
-        // $user = User::findOrFail($id);
+        $data = [];
+
+        // Get user logged
+        $jwtAuth = new JwtAuth();
+        $userAuth = $jwtAuth->getIdentity($request);
+
+        // Check if exists at registry
+        $post_find = Post::find($id);
+
+        if (empty($post_find)){
+
+            $data['code'] = 400;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR. El post que deseas eliminar no existe.';
+
+            return response()->json($data, $data['code']);
+        }
+
+        // Find registry for delete and check (user logged = user_id)->owner.
+        $post = Post::where('id',$id)->where('user_id', $userAuth->sub)->first();
+        // $post = Post::find($id);
+
+        if (empty($post)){
+            $data['code'] = 400;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR.No eres el propietario del post.';
+
+            return response()->json($data, $data['code']);
+        }
+
+        // Delete post
+        $delete = $post->delete();
+
+        if (empty($delete)){
+
+            $data['code'] = 400;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR.No se pudo eliminar el registro.';
+
+            return response()->json($data, $data['code']);
+        }
+
+        // Return success response
+        $data['code'] = 200;
+        $data['status'] = 'success';
+        $data['message'] = 'El registro se elimino correctamente';
+
+        return response()->json($data, $data['code']);
+
     }
 
 
