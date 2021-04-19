@@ -2,9 +2,11 @@ USER
     - validar nueva cuenta con email
     - Forgot password
     - eliminar cuenta user
+    - actualizar avatar
 
 CATEGORIES
     - Eliminar categorias
 
 POSTS
-    - Actualizar imagenes post metodo update
+    - Update->Actualizar imagenes
+    - Destroy->Eliminar imagen del storage

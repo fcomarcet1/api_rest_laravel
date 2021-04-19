@@ -165,7 +165,7 @@ class UserController extends Controller
                 'code' => 500,
                 'status' => 'error',
                 'message' => ' ERROR. Selecciona una imagen valida',
-                'errors' => $validate->errors()
+                'errors' => $validate->errors(),
             ];
 
             return response()->json($data, $data['code']);
