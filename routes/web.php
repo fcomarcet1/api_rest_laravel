@@ -56,8 +56,10 @@ Route::post('/api/register', [RegisterController::class, 'register']);
 Route::post('/api/login', [LoginController::class, 'login']);
 
 // User.
-Route::put('/api/user/update', [UserController::class, 'update'])->middleware(ApiAuth::class);;
-Route::post('api/user/upload', [UserController::class, 'upload'])->middleware(ApiAuth::class);
+Route::put('/api/user/update', [UserController::class, 'update'])
+    ->middleware(ApiAuth::class);;
+Route::post('api/user/upload', [UserController::class, 'upload'])
+    ->middleware(ApiAuth::class);
 Route::get('/api/user/avatar/{filename}', [UserController::class, 'getImage']); // avatar
 Route::get('/api/user/profile/{id}', [UserController::class, 'profile']);
 
@@ -67,7 +69,11 @@ Route::resources([
     '/api/post' => PostController::class,
 ]);
 
-Route::post('api/post/upload/{post}', [PostController::class, 'upload'])->middleware(ApiAuth::class, RoleAdminAuth::class);
+Route::post('api/post/upload/{post}', [PostController::class, 'upload'])
+    ->middleware(ApiAuth::class, RoleAdminAuth::class);
+
+Route::get('api/post/image/{filename}', [PostController::class, 'getImage']);
+
 
 
 

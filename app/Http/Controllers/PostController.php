@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Helpers\JwtAuth;
 use App\Models\Post;
 use Exception;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
@@ -18,7 +20,7 @@ class PostController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('api.auth')->except('index', 'show');
+        $this->middleware('api.auth')->except('index', 'show', 'getImage');
     }
 
 
@@ -447,6 +449,41 @@ class PostController extends Controller
         $data['message'] = 'OK.La imagen se subió correctamente';
 
         return response()->json($data, $data['code']);
+    }
+
+    /**
+     * Get image for post
+     *
+     * @param $filename
+     * @return JsonResponse|Response
+     * @throws FileNotFoundException
+     */
+    public function getImage($filename)
+    {
+        $isset_file = Storage::disk('images')->exists($filename);
+
+        if($isset_file){
+            $file = Storage::disk('images')->get($filename);
+            return new Response($file, 200);
+
+            /*
+            // Return json.
+            $data = array(
+                'code' => 200,
+                'status' => 'success',
+                'image' => base64_encode($file)
+            );
+            return response()->json($data, $data['code']);
+            */
+        }
+        else{
+            $data = [
+                'code' => 404,
+                'status' => 'error',
+                'message' => 'ERROR.La imagen no existe'
+            ];
+            return response()->json($data, $data['code']);
+        }
     }
 
 
