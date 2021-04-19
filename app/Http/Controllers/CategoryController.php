@@ -198,6 +198,7 @@ class CategoryController extends Controller
         //dump($user_role);die();
 
         if (!empty($json) && !empty($params_array) ){
+
             // Get data from user logged
             $token = $request->header('Authorization');
             $JwtAuth = new JwtAuth();

@@ -40,10 +40,12 @@ Route::get('/', function () {
 // Route::get('/test', [TestController::class, 'test']);
 // Route::get('/test-orm', [TestController::class, 'testORM'])->name('test_ORM');
 // Route::get('/test-json', [TestController::class, 'testJson']);
+Route::get('/post-list', [TestController::class, 'index']);
 
 // Route::get('/usuario/pruebas', [UserController::class ,'test']);
 // Route::get('/post/pruebas', [PostController::class ,'test']);
 // Route::get('/categoria/pruebas', [CategoryController::class ,'test']);
+
 
 
 

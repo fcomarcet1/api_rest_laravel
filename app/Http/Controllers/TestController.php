@@ -11,18 +11,18 @@ use Illuminate\Http\Request;
  * Class TestController
  * @package App\Http\Controllers
  */
-class TestController extends Controller
+class TestController extends BaseController
 {
    public function test(Request $request): string
    {
        return "Prueba del TestController";
    }
 
-    /**
+   /**
      * @param Request $request
      * @return JsonResponse
      */
-    public function testJson(Request $request): JsonResponse
+   public function testJson(Request $request): JsonResponse
     {
         $data = [
             'status' => 'error',
@@ -66,6 +66,38 @@ class TestController extends Controller
        */
        die();
    }
+
+
+   public function index(): JsonResponse
+   {
+       $result = Post::all();
+       return $this->sendResponse($result,200, 'Posts retrieved successfully.');
+   }
+
+    public function store(Request $request): JsonResponse
+    {
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'name' => 'required',
+            'vat_number' => 'required|digits:10',
+            'street' => 'required',
+            'city' => 'required',
+            'post_code' => 'required|regex:/^([0-9]{2})(-[0-9]{3})?$/i',
+            'email' => 'required|email'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError($validator->errors(), 'Validation Error.', 400);
+        }
+
+        $post = Post::create($input);
+
+        return $this->sendResponse($post->toArray(), 'Client created successfully.');
+    }
+
+
+
 
 
 }

@@ -2,11 +2,19 @@
 
 namespace App\Helpers;
 
+//use Composer\DependencyResolver\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Exception;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
+/**
+ * Class JwtAuth
+ * @package App\Helpers
+ */
 class JwtAuth
 {
     /**
@@ -155,4 +163,22 @@ class JwtAuth
 
         return sha1($aud);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function getIdentity (Request $request)
+    {
+        $token = $request->header('Authorization');
+        //$token = $this->getToken($request);
+        $JwtAuth = new JwtAuth();
+
+        return $JwtAuth->checkToken($token, true);
+    }
+
+   /* public function getToken (Request $request)
+    {
+        return $request->header('Authorization');
+    }*/
+
 }

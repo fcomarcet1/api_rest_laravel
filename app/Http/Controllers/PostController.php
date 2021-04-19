@@ -29,10 +29,12 @@ class PostController extends Controller
     public function index(): JsonResponse
     {
         // Get all posts
-        //$posts = Post::all();
-        $posts = Post::paginate(10)->load('category');
+        // $posts = Post::all();
+        // $posts = Post::paginate(10)->load('category');
+        $posts = Post::latest()->paginate(10)->load('category');
 
         if (is_object($posts) && $posts->count() >= 1 ){
+
             $data = [
                 'code' => 200,
                 'status' => 'success',
@@ -61,8 +63,10 @@ class PostController extends Controller
         $post = Post::find($id);
 
         if (is_object($post)){
+
             //Get category of this post.
             $post = $post->load('category');
+
             $data = [
                 'code' => 200,
                 'status' => 'success',
@@ -137,7 +141,7 @@ class PostController extends Controller
 
                 if ($post_saved){
                     $data = [
-                        'code' => 200,
+                        'code' => 201,
                         'status' => 'success',
                         'message' => 'OK. Post añadido correctamente.',
                         'post' => $post,
@@ -164,6 +168,114 @@ class PostController extends Controller
         return response()->json($data, $data['code']);
     }
 
+
+    /**
+     * Update the specified resource in storage (Update post).
+     *
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function update(int $id, Request $request): JsonResponse
+    {
+        // Get data from request
+        $json = $request->input('json', null);
+        $params = json_decode($json);
+        $params_array = json_decode($json, true);
+        $data = [];
+
+        if (empty($json) || empty($params_array) || empty($params)){
+
+            $data['code'] = 400;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR. Los datos no se recibieron correctamente.';
+
+            return response()->json($data, $data['code']);
+        }
+
+        // Get user logged
+        $jwtAuth = new JwtAuth();
+        $userAuth = $jwtAuth->getIdentity($request);
+
+        // Validate data from request
+        $validate = Validator::make($params_array, [
+
+            'title' => 'required|unique:posts,title,' . $userAuth->sub,
+            'content' => 'required',
+            //'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:20048',
+            'category_id' => 'required',
+        ]);
+
+        if ($validate->fails()){
+
+            $data['code'] = 400;
+            $data['status'] = 'error';
+            $data['errors'] = $validate->errors();
+
+            return response()->json($data, $data['code']);
+        }
+
+
+        // Find registry for update and check (user logged = user_id)->owner.
+        $post = Post::where('id',$id)->where('user_id', $userAuth->sub)->first();
+
+        if (empty($post)){
+
+            $data['code'] = 401; //401 Unauthorized
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR. No puedes modificar ese post.';
+
+            return response()->json($data, $data['code']);
+        }
+
+        // Eliminar lo que no queremos actualizar
+        unset($params_array['id']);
+        unset($params_array['user_id']);
+        unset($params_array['created_at']);
+        unset($params_array['user']);
+
+        // Conditions for update
+        $where = [
+            'id'=> $id,
+            'user_id' => $userAuth->sub
+        ];
+
+        // Actualizar el registro en concreto
+        $post_update = Post::updateOrCreate($where, $params_array);
+
+        if (empty($post_update)){
+
+            $data['code'] = 400;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR. No se pudo actualizar el post.';
+
+            return response()->json($data, $data['code']);
+        }
+
+        // Add data for response
+        $data['code'] = 200;
+        $data['status'] = 'success';
+        $data['post'] = $post_update;
+        //$data['changes'] = $params_array;
+
+        return response()->json($data, $data['code']);
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy($id)
+    {
+        // $user = User::findOrFail($id);
+    }
+
+
+
     /**
      * Show the form for creating a new resource.
      *
@@ -186,26 +298,7 @@ class PostController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param Request $request
-     * @param  int  $id
-     * @return Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
+
+
 }

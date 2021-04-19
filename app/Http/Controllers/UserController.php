@@ -194,7 +194,6 @@ class UserController extends Controller
                 $uploadFolder = 'users';
                 $uploaded_image = $image->storeAs($uploadFolder, $image_path_unique );
 
-                // Almacenar image_path en BBDD
 
                 // Get Token from request(Se obtiene del header)
                 $token = $request->header('Authorization');
