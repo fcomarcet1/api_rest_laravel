@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * Class PostController
+ * @package App\Http\Controllers
+ */
 class PostController extends Controller
 {
     /**
@@ -20,7 +24,13 @@ class PostController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('api.auth')->except('index', 'show', 'getImage');
+        $this->middleware('api.auth')->except(
+            'index',
+            'show',
+            'getImage',
+            'getPostByCategory',
+            'getPostByUser'
+        );
     }
 
 
@@ -486,6 +496,58 @@ class PostController extends Controller
         }
     }
 
+
+    /**
+     * Get all posts by category
+     *
+     * @param $id (category_id)
+     * @return JsonResponse
+     */
+    public function getPostByCategory($id): JsonResponse
+    {
+        $data = [];
+        $posts = Post::where('category_id', $id)->get()->load('category');
+
+        // NOTA: si no existe la categoria devuelve un obj vacio, empty no lo detecta
+        // como null user count()
+
+        if ($posts->count() < 1 ){
+            $data['code'] = 404;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR. No existen posts de esa categoria';
+        }
+        else{
+            $data['code'] = 200;
+            $data['status'] = 'success';
+            $data['posts'] = $posts;
+        }
+        return response()->json($data, $data['code']);
+    }
+
+    /**
+     * Get all posts by user
+     *
+     * @param  $id
+     * @return JsonResponse
+     */
+    public function getPostByUser($id): JsonResponse
+    {
+        $data = [];
+        $posts = Post::where('user_id', $id)->get()->load('category');
+
+        if ($posts->count() < 1){
+            $data['code'] = 404;
+            $data['status'] = 'error';
+            $data['message'] = 'ERROR. No existen posts de ese usuario';
+        }
+        else{
+            $data['code'] = 200;
+            $data['status'] = 'success';
+            $data['posts'] = $posts;
+        }
+
+        return response()->json($data, $data['code']);
+    }
 
 
     /**

@@ -71,9 +71,9 @@ Route::resources([
 
 Route::post('api/post/upload/{post}', [PostController::class, 'upload'])
     ->middleware(ApiAuth::class, RoleAdminAuth::class);
-
 Route::get('api/post/image/{filename}', [PostController::class, 'getImage']);
-
+Route::get('api/post/category/{category}', [PostController::class, 'getPostByCategory']);
+Route::get('api/post/user/{user}', [PostController::class, 'getPostByUser']);
 
 
 
