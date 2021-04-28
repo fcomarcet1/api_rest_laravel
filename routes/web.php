@@ -41,7 +41,8 @@ Route::get('/', function () {
 // Route::get('/test', [TestController::class, 'test']);
 // Route::get('/test-orm', [TestController::class, 'testORM'])->name('test_ORM');
 // Route::get('/test-json', [TestController::class, 'testJson']);
-Route::get('/post-list', [TestController::class, 'index']);
+// Route::get('/post-list', [TestController::class, 'index']);
+// Route::post('/api/register', [RegisterController::class, 'testRegister']);
 
 // Route::get('/usuario/pruebas', [UserController::class ,'test']);
 // Route::get('/post/pruebas', [PostController::class ,'test']);

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -32,11 +33,18 @@ class RegisterController extends Controller
         /**
          * Get data user from POST request
          */
-        $requestData = $request->all(); // returns array ['json' => '{"name":"Pepe"...}']
+
+        // example json string received from frontend
+        // "json={"id":1,"name":"Francisco","surname":"Prieto","role":"ROLE_USER","email":"elisa.prieto.melero@gmail.com","password":"a48330190Z*","description":"","image":""}"
+
+        $requestData = $request->all(); // returns array ['json' => '{"name":"Pepe"...}'].
         $json = $request->input('json'); // returns string '{"name":"Seba",...}'
+
         $params = json_decode($json); // returns object var_dump($params->name);
         $params_array = json_decode($json, true); // returns  associative array
         $data = [];
+       /* dump($params_array);
+        die();*/
 
         if (!empty($params) && !empty($params_array)){
 
@@ -102,5 +110,37 @@ class RegisterController extends Controller
 
         return response()->json($data, $data['code']);
 
+    }
+
+    public function testRegister(Request $request): JsonResponse
+    {
+        // json={"id":1,"name":"Francisco","surname":"Prieto","role":"ROLE_USER","email":"elisa.prieto.melero@gmail.com","password":"a48330190Z*","description":"","image":""}
+
+        $json = $request->input('json'); // returns string '{"name":"Seba",...}'
+        $params = json_decode($json); // returns object var_dump($params->name);
+        $params_array = json_decode($json, true); // returns  associative array
+
+        dump($request->input('json'));
+        die();
+
+        /** @var User $user */
+        $user = User::create([
+            'name' => $request->get('name'),
+            'surname' => $request->get('surname'),
+            'email' => $request->get('email'),
+            'password' => Hash::make($request->get('password')),
+            'role' => 'ROLE_USERS',
+            'description' => null,
+            'image' => null,
+            'updated_at' => null,
+        ]);
+
+        $data = [
+            'status' => 'success',
+            'code' => 200,
+            'message' => 'El usuario se ha creado correctamente1',
+        ];
+
+        return response()->json($data, $data['code']);
     }
 }

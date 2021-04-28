@@ -14,6 +14,7 @@ class LoginController extends Controller
     /**
      * @param Request $request
      * @return JsonResponse
+     * @throws \Exception
      */
     public function login(Request $request): JsonResponse
     {
@@ -22,7 +23,7 @@ class LoginController extends Controller
         // Recibir datos de la peticion
         $data = [];
         $requestData = $request->all(); // returns array ['json' => '{"name":"Pepe"...}']
-        $json = $request->input('login'); // returns string '{"name":"Seba",...}'
+        $json = $request->input('json'); // returns string '{"name":"Seba",...}'
         $params = json_decode($json); // returns object var_dump($params->name);
         $params_array = json_decode($json, true); // returns  associative array
 
@@ -55,8 +56,18 @@ class LoginController extends Controller
             if (!empty($params->getToken)){
                 $signUp = $JwtAuth->signUp($email, $password, true);
             }
+            // If we need return token + user identity:
+            /*$data = [
+                'code' => 200,
+                'status' => 'success',
+                'token' => $JwtAuth->signUp($email, $password),
+                'identity' => $JwtAuth->signUp($email, $password, true)
+            ];*/
         }
+        // Return token + identity:
+        // return response()->json($data, $data['code']);
 
+        // Return only token
         return response()->json($signUp, 200);
     }
 
